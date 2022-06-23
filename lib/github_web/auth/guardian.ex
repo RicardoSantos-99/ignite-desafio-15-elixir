@@ -4,14 +4,23 @@ defmodule GithubWeb.Auth.Guardian do
   alias Github.{User, Error}
   alias Github.Users.Get, as: UserGet
 
-  def subject_for_token(%User{id: id}, _claims), do: {:ok, id}
+  def subject_for_token(%User{id: id}, _claims) do
+    {:ok, id}
+  end
 
-  def resource_from_claims(%{"sub" => id}), do: UserGet.by_id(id)
+  def resource_from_claims(%{"sub" => id}) do
+    case UserGet.by_id(id) do
+      nil -> Error.build_user_not_found_error()
+      user -> {:ok, user}
+    end
+  end
+
+  def resource_from_claims(_), do: {:error, :unhandled_resource_type}
 
   def authenticate(%{"id" => user_id, "password" => password}) do
     with {:ok, %User{password_hash: hash} = user} <- UserGet.by_id(user_id),
          true <- Pbkdf2.verify_pass(password, hash),
-         {:ok, token, _claims} <- encode_and_sign(user) do
+         {:ok, token, _claims} <- encode_and_sign(user, %{}, ttl: {30, :seconds}) do
       {:ok, token}
     else
       false -> {:error, Error.build(:unauthorized, "Please verify your credentials")}
