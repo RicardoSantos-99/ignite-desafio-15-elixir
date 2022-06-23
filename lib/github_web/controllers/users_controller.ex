@@ -8,7 +8,7 @@ defmodule GithubWeb.UsersController do
 
   def create(conn, params) do
     with {:ok, %User{} = user} <- Github.create_user(params),
-         {:ok, token, _claims} <- Guardian.encode_and_sign(user) do
+         {:ok, token, _claims} <- Guardian.encode_and_sign(user, %{}, ttl: {30, :seconds}) do
       conn
       |> put_status(:created)
       |> render("create.json", token: token, user: user)
