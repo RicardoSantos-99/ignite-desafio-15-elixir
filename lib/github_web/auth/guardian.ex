@@ -31,6 +31,8 @@ defmodule GithubWeb.Auth.Guardian do
   def authenticate(_), do: {:error, Error.build(:bad_request, "Invalid or missing params")}
 
   def refresh_token(token, _claims) do
+    # params = verify_claims(claims, %{})
+
     {:ok, _old_stuff, {token, claims}} = refresh(token, ttl: {15, :seconds})
 
     {:ok, %{token: token, claims: claims}}
