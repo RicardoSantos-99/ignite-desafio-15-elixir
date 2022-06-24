@@ -14,8 +14,11 @@ defmodule GithubWeb.UsersView do
 
   def render("user.json", %{user: %User{} = user}), do: %{user: user}
 
-  def render("list_users.json", %{users: users}) do
-    %{data: render_many(users, __MODULE__, "one_user.json")}
+  def render("list_users.json", %{users: users, token: token}) do
+    %{
+      token: token,
+      data: render_many(users, __MODULE__, "one_user.json")
+    }
   end
 
   def render("one_user.json", %{users: user}) do
